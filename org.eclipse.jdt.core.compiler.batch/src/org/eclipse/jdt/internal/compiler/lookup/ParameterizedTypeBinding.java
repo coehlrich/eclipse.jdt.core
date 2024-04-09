@@ -1724,10 +1724,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	}
 	@Override
 	public MethodBinding getSingleAbstractMethod(final Scope scope, boolean replaceWildcards) {
-		return getSingleAbstractMethod(scope, replaceWildcards, -1, -1 /* do not capture */);
-	}
-	public MethodBinding getSingleAbstractMethod(final Scope scope, boolean replaceWildcards, int start, int end) {
-		int index = replaceWildcards ? end < 0 ? 0 : 1 : 2; // capturePosition >= 0 IFF replaceWildcard == true
+		int index = replaceWildcards ? 0 : 1; // capturePosition >= 0 IFF replaceWildcard == true
 		if (this.singleAbstractMethod != null) {
 			if (this.singleAbstractMethod[index] != null)
 				return this.singleAbstractMethod[index];
@@ -1749,13 +1746,6 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 				return this.singleAbstractMethod[index] = new ProblemMethodBinding(TypeConstants.ANONYMOUS_METHOD, null, ProblemReasons.NotAWellFormedParameterizedType);
 		} else if (types == null) {
 			types = NO_TYPES;
-		}
-		if (end >= 0) {
-			// caller is going to require the sam's parameters to be treated as argument expressions, post substitution capture will lose identity, where substitution results in fan out
-			// capture first and then substitute.
-			for (int i = 0, length = types.length; i < length; i++) {
-				types[i] = types[i].capture(scope, start, end);
-			}
 		}
 		declaringType = scope.environment().createParameterizedType(genericType, types, genericType.enclosingType());
 		TypeVariableBinding [] typeParameters = genericType.typeVariables();

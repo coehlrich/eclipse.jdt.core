@@ -311,12 +311,9 @@ class ConstraintExpressionFormula extends ConstraintFormula {
 			// ignore parameterization of resolve result and do a fresh start:
 			MethodBinding original = compileTimeDecl.shallowOriginal();
 			if (needsInference(reference, original)) {
-				TypeBinding[] argumentTypes;
-				if (t.isParameterizedType()) {
-					MethodBinding capturedFunctionType = ((ParameterizedTypeBinding)t).getSingleAbstractMethod(inferenceContext.scope, true, reference.sourceStart, reference.sourceEnd);
-					argumentTypes = capturedFunctionType.parameters;
-				} else {
-					argumentTypes = functionType.parameters;
+				TypeBinding[] argumentTypes = new TypeBinding[functionType.parameters.length];
+				for (int i = 0, length = argumentTypes.length; i < length; i++) {
+					argumentTypes[i] = functionType.parameters[i].capture(inferenceContext.scope, reference.sourceStart, reference.sourceEnd);
 				}
 				SuspendedInferenceRecord prevInvocation = inferenceContext.enterPolyInvocation(reference, reference.createPseudoExpressions(argumentTypes));
 
