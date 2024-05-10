@@ -313,7 +313,7 @@ class ConstraintExpressionFormula extends ConstraintFormula {
 			if (needsInference(reference, original)) {
 				TypeBinding[] argumentTypes = new TypeBinding[functionType.parameters.length];
 				for (int i = 0, length = argumentTypes.length; i < length; i++) {
-					argumentTypes[i] = functionType.parameters[i].capture(inferenceContext.scope, reference.sourceStart, reference.sourceEnd);
+					argumentTypes[i] = functionType.parameters[i].capture(inferenceContext.scope, reference.sourceStart, -i);
 				}
 				SuspendedInferenceRecord prevInvocation = inferenceContext.enterPolyInvocation(reference, reference.createPseudoExpressions(argumentTypes));
 
