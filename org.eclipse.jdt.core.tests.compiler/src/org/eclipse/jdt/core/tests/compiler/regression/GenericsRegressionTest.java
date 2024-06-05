@@ -6977,5 +6977,29 @@ public void testBugGH656_2() {
 			"The method JavacWillAlsoError.someAbstractMethod() does not override the inherited method from MyAbstract since it is private to a different package\n" +
 			"----------\n");
 }
+//https://github.com/eclipse-jdt/eclipse.jdt.core/issues/2523
+//Method call compiles with javac but not ecj with upper bound of type variable
+public void testBugGH2523() {
+        this.runConformTest(
+            new String[] {
+              "Outer.java",
+              """
+              class Outer {
+                  public void test() {
+                      C<? extends D> c = null;
+                      optional(c, null);
+                  }
+
+                  private <I extends F, T extends E<I>> void optional(C<T> l, I i) {}
+
+                  public static interface C<T extends E<?>> {}
+                  public static class D implements E<F> {}
+                  public static interface E<I extends F> {}
+                  public static class F {}
+              }
+              """
+            }
+        );
+}
 }
 

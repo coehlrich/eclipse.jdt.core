@@ -22,6 +22,8 @@
  *******************************************************************************/
 package org.eclipse.jdt.internal.compiler.lookup;
 
+import java.util.stream.Stream;
+
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
@@ -253,6 +255,12 @@ public class CaptureBinding extends TypeVariableBinding {
 						}
 						// TODO: there are cases were we need to compute glb(capturedWildcardBound, substitutedVariableSuperclass)
 						//       but then when glb (perhaps triggered inside setFirstBound()) fails, how to report the error??
+					}
+
+					if (substitutedVariableInterfaces != Binding.NO_SUPERINTERFACES && !capturedWildcardBound.isArrayType()) {
+						substitutedVariableInterfaces = Stream.of(substitutedVariableInterfaces)
+								.filter(reference -> !capturedWildcardBound.isCompatibleWith(reference, scope))
+								.toArray(ReferenceBinding[]::new);
 					}
 					this.setSuperInterfaces(substitutedVariableInterfaces);
 				}
