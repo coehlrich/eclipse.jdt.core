@@ -1526,6 +1526,9 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	 */
 	@Override
 	public ReferenceBinding[] superInterfaces() {
+		TypeBinding capture = InferenceContext18.maybeCapture(this);
+		if (capture != this) //$IDENTITY-COMPARISON$
+			return capture.superInterfaces();
 	    if (this.superInterfaces == null) {
     		if (this.type.isHierarchyBeingConnected())
     			return Binding.NO_SUPERINTERFACES; // prevent superinterfaces from being assigned before they are connected
