@@ -657,7 +657,7 @@ public static MethodBinding inferDiamondConstructor(Scope scope, InvocationSite 
 	// Given the allocation type and the arguments to the constructor, see if we can infer the constructor of the elided parameterized type.
 	MethodBinding factory = scope.getStaticFactory(allocationType, enclosingType, argumentTypes, site);
 	if (factory instanceof ParameterizedGenericMethodBinding && factory.isValidBinding()) {
-		if (site.invocationTargetType() == null && site.getExpressionContext().definesTargetType() && factory instanceof PolyParameterizedGenericMethodBinding)
+		if (site.getExpressionContext().definesTargetType() && factory instanceof PolyParameterizedGenericMethodBinding)
 			return factory; // during applicability inference keep the PolyParameterizedGenericMethodBinding
 		ParameterizedGenericMethodBinding genericFactory = (ParameterizedGenericMethodBinding) factory;
 		inferredReturnTypeOut[0] = genericFactory.inferredReturnType;
