@@ -236,7 +236,7 @@ public class ClassScope extends Scope {
 		if (!sourceType.isPrivate() && sourceType.superclass instanceof SourceTypeBinding && sourceType.superclass.isPrivate())
 			((SourceTypeBinding) sourceType.superclass).tagIndirectlyAccessibleMembers();
 
-		if (sourceType.isMemberType() && !sourceType.isLocalType())
+		if (sourceType.isMemberType() && sourceType.scope.methodScope() == null)
 			 ((MemberTypeBinding) sourceType).checkSyntheticArgsAndFields();
 
 		ReferenceBinding[] memberTypes = sourceType.memberTypes;
@@ -250,54 +250,22 @@ public class ClassScope extends Scope {
 		this.referenceContext.staticInitializerScope = new MethodScope(this, this.referenceContext, true);
 		this.referenceContext.initializerScope = new MethodScope(this, this.referenceContext, false);
 
+		char[][] compoundName = CharOperation.deepCopy(enclosingType.compoundName);
+		char[] className = CharOperation.concat(compoundName[compoundName.length - 1], this.referenceContext.name, '$');
+		char[] newName;
+		for (int i = 1; packageBinding.hasType0Any(newName = CharOperation.concat(className, String.valueOf(i).toCharArray())); i++) {
+			// There is always an unused local class binary name
+		}
+		compoundName[compoundName.length - 1] = newName;
 		// build the binding or the local type
-		LocalTypeBinding localType = new LocalTypeBinding(this, enclosingType, enclosingSwitchLabel());
+		LocalTypeBinding localType = new LocalTypeBinding(compoundName, this, enclosingType, enclosingSwitchLabel());
 		this.referenceContext.binding = localType;
 		checkAndSetModifiers();
 		buildTypeVariables();
+		packageBinding.addType(localType);
 
 		// Look at member types
-		ReferenceBinding[] memberTypeBindings = Binding.NO_MEMBER_TYPES;
-		if (this.referenceContext.memberTypes != null) {
-			int size = this.referenceContext.memberTypes.length;
-			memberTypeBindings = new ReferenceBinding[size];
-			int count = 0;
-			nextMember : for (int i = 0; i < size; i++) {
-				TypeDeclaration memberContext = this.referenceContext.memberTypes[i];
-				switch(TypeDeclaration.kind(memberContext.modifiers)) {
-					case TypeDeclaration.INTERFACE_DECL :
-						if (compilerOptions().sourceLevel >= ClassFileConstants.JDK16)
-							break;
-						//$FALL-THROUGH$
-					case TypeDeclaration.ANNOTATION_TYPE_DECL :
-						problemReporter().illegalLocalTypeDeclaration(memberContext);
-						continue nextMember;
-				}
-				ReferenceBinding type = localType;
-				// check that the member does not conflict with an enclosing type
-				do {
-					if (CharOperation.equals(type.sourceName, memberContext.name)) {
-						problemReporter().typeCollidesWithEnclosingType(memberContext);
-						continue nextMember;
-					}
-					type = type.enclosingType();
-				} while (type != null);
-				// check the member type does not conflict with another sibling member type
-				for (int j = 0; j < i; j++) {
-					if (CharOperation.equals(this.referenceContext.memberTypes[j].name, memberContext.name)) {
-						problemReporter().duplicateNestedType(memberContext);
-						continue nextMember;
-					}
-				}
-				ClassScope memberScope = new ClassScope(this, this.referenceContext.memberTypes[i]);
-				LocalTypeBinding memberBinding = memberScope.buildLocalType(localType, packageBinding);
-				memberBinding.setAsMemberType();
-				memberTypeBindings[count++] = memberBinding;
-			}
-			if (count != size)
-				System.arraycopy(memberTypeBindings, 0, memberTypeBindings = new ReferenceBinding[count], 0, count);
-		}
-		localType.setMemberTypes(memberTypeBindings);
+		buildMemberTypes(null);
 		return localType;
 	}
 
@@ -328,8 +296,12 @@ public class ClassScope extends Scope {
 					throw new SourceTypeCollisionException(); // resolved a type ref before APT generated the type
 				}
 				switch(TypeDeclaration.kind(memberContext.modifiers)) {
-					case TypeDeclaration.INTERFACE_DECL :
 					case TypeDeclaration.ANNOTATION_TYPE_DECL :
+						if (this.enclosingMethodScope() != null) {
+							problemReporter().illegalLocalTypeDeclaration(memberContext);
+						}
+						//$FALL-THROUGH$
+					case TypeDeclaration.INTERFACE_DECL :
 						if (compilerOptions().sourceLevel >= ClassFileConstants.JDK16)
 							break;
 						//$FALL-THROUGH$

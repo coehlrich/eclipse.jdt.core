@@ -395,10 +395,6 @@ public void emulateOuterAccess(LocalVariableBinding outerLocalVariable) {
 	if (outerVariableScope.methodScope() != currentMethodScope) {
 		NestedTypeBinding currentType = (NestedTypeBinding) enclosingSourceType();
 
-		//do nothing for member types, pre emulation was performed already
-		if (!currentType.isLocalType()) {
-			return;
-		}
 		// must also add a synthetic field if we're not inside a constructor
 		if (!currentMethodScope.isInsideInitializerOrConstructor()) {
 			currentType.addSyntheticArgumentAndField(outerLocalVariable);

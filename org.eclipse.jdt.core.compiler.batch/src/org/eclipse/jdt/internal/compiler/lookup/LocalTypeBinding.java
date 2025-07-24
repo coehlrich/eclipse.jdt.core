@@ -26,16 +26,15 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 public final class LocalTypeBinding extends NestedTypeBinding {
-	final static char[] LocalTypePrefix = { '$', 'L', 'o', 'c', 'a', 'l', '$' };
 
 	private InnerEmulationDependency[] dependents;
 	public CaseStatement enclosingCase; // from 1.4 on, local types should not be accessed across switch case blocks (52221)
 	public int sourceStart; // used by computeUniqueKey to uniquely identify this binding
 	public MethodBinding enclosingMethod;
 
-public LocalTypeBinding(ClassScope scope, SourceTypeBinding enclosingType, CaseStatement switchCase) {
+public LocalTypeBinding(char[][] compoundName, ClassScope scope, SourceTypeBinding enclosingType, CaseStatement switchCase) {
 	super(
-		new char[][] {CharOperation.concat(LocalTypeBinding.LocalTypePrefix, scope.referenceContext.name)},
+		compoundName,
 		scope,
 		enclosingType);
 	TypeDeclaration typeDeclaration = scope.referenceContext;

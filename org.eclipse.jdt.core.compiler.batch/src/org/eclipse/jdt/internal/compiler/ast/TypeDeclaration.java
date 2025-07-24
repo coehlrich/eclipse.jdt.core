@@ -293,8 +293,6 @@ public void analyseCode(ClassScope currentScope, FlowContext flowContext, FlowIn
 	try {
 		if ((flowInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) == 0) {
 			this.bits |= ASTNode.IsReachable;
-			LocalTypeBinding localType = (LocalTypeBinding) this.binding;
-			localType.setConstantPoolName(currentScope.compilationUnitScope().computeConstantPoolName(localType));
 		}
 		manageEnclosingInstanceAccessIfNecessary(currentScope, flowInfo);
 		updateMaxFieldCount(); // propagate down the max field count
