@@ -111,6 +111,9 @@ public class InferenceVariable extends TypeVariableBinding {
 		if (typeParameter.isTypeVariable()) {
 			TypeVariableBinding typeVariable = (TypeVariableBinding) typeParameter;
 			if (typeVariable.firstBound != null) {
+				this.setFirstBound(typeVariable.firstBound);
+				this.setSuperClass(typeVariable.superclass);
+				this.setSuperInterfaces(typeVariable.superInterfaces);
 				long boundBits = typeVariable.firstBound.tagBits & TagBits.AnnotationNullMASK;
 				if (boundBits == TagBits.AnnotationNonNull)
 					this.tagBits |= boundBits; // @NonNull must be preserved
@@ -118,7 +121,9 @@ public class InferenceVariable extends TypeVariableBinding {
 					this.nullHints |= boundBits; // @Nullable is only a hint
 			}
 		}
-		this.superclass = object;
+		if (this.superclass == null) {
+			this.superclass = object;
+		}
 		this.prototype = this;
 	}
 

@@ -380,4 +380,14 @@ public class IntersectionTypeBinding18 extends ReferenceBinding {
 	public boolean isNonDenotable() {
 		return true;
 	}
+
+	@Override
+	public boolean isProperType(boolean admitCapture18) {
+		for (ReferenceBinding intersectingType : this.intersectingTypes) {
+			if (!intersectingType.isProperType(admitCapture18)) {
+				return false;
+			}
+		}
+		return super.isProperType(admitCapture18);
+	}
 }
