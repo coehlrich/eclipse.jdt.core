@@ -78,28 +78,31 @@ public class InferenceVariable extends TypeVariableBinding {
 			if (key != null)
 				uniqueInferenceVariables.put(key, var);
 			if (typeParameter instanceof TypeVariableBinding typeVariable && typeVariable.firstBound != null) {
-				for (int i = 0; i < allParameters.length; i++) {
-					int otherRank = i;
-					Substitution substitution = new Substitution() {
-						@Override
-						public TypeBinding substitute(TypeVariableBinding variable) {
-							return get(variable, otherRank, site, scope, object, initial, allParameters);
+				Substitution substitution = new Substitution() {
+					@Override
+					public TypeBinding substitute(TypeVariableBinding variable) {
+						for (int i = 0; i < allParameters.length; i++) {
+							if (TypeBinding.equalsEquals(variable, allParameters[i])) {
+								return get(variable, i, site, scope, object, initial, allParameters);
+							}
 						}
+						return variable;
+					}
 
-						@Override
-						public boolean isRawSubstitution() {
-							return false;
-						}
+					@Override
+					public boolean isRawSubstitution() {
+						return false;
+					}
 
-						@Override
-						public LookupEnvironment environment() {
-							return scope.environment();
-						}
-					};
-					var.setFirstBound(Scope.substitute(substitution, allParameters[i]));
-					var.setSuperClass((ReferenceBinding) Scope.substitute(substitution, allParameters[i].superclass()));
-					var.setSuperInterfaces(Scope.substitute(substitution, allParameters[i].superInterfaces()));
-				}
+					@Override
+					public LookupEnvironment environment() {
+						return scope.environment();
+					}
+				};
+				var.setFirstBound(Scope.substitute(substitution, typeVariable.firstBound));
+				var.setSuperClass((ReferenceBinding) Scope.substitute(substitution, typeVariable.superclass));
+				var.setSuperInterfaces(Scope.substitute(substitution, typeVariable.superInterfaces));
+
 			}
 		}
 		return var;
