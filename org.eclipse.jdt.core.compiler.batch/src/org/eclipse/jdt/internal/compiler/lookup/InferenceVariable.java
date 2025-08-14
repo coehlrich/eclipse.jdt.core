@@ -64,7 +64,7 @@ public class InferenceVariable extends TypeVariableBinding {
 	 * Create or retrieve the inference variable representing the given typeParameter.
 	 * Inference variables are interned to avoid duplication due to lambda copying.
 	 */
-	public static InferenceVariable get(TypeBinding typeParameter, int rank, InvocationSite site, Scope scope, ReferenceBinding object, boolean initial) {
+	public static InferenceVariable get(TypeBinding typeParameter, int rank, InvocationSite site, Scope scope, ReferenceBinding object, boolean initial, TypeBinding[] allParameters) {
 		Map<InferenceVarKey, InferenceVariable> uniqueInferenceVariables = scope.compilationUnitScope().uniqueInferenceVariables;
 		InferenceVariable var = null;
 		InferenceVarKey key = null;
@@ -77,6 +77,30 @@ public class InferenceVariable extends TypeVariableBinding {
 			var = new InferenceVariable(typeParameter, rank, newVarId, site, scope.environment(), object, initial);
 			if (key != null)
 				uniqueInferenceVariables.put(key, var);
+			if (typeParameter instanceof TypeVariableBinding typeVariable && typeVariable.firstBound != null) {
+				for (int i = 0; i < allParameters.length; i++) {
+					int otherRank = i;
+					Substitution substitution = new Substitution() {
+						@Override
+						public TypeBinding substitute(TypeVariableBinding variable) {
+							return get(variable, otherRank, site, scope, object, initial, allParameters);
+						}
+
+						@Override
+						public boolean isRawSubstitution() {
+							return false;
+						}
+
+						@Override
+						public LookupEnvironment environment() {
+							return scope.environment();
+						}
+					};
+					var.setFirstBound(Scope.substitute(substitution, allParameters[i]));
+					var.setSuperClass((ReferenceBinding) Scope.substitute(substitution, allParameters[i].superclass()));
+					var.setSuperInterfaces(Scope.substitute(substitution, allParameters[i].superInterfaces()));
+				}
+			}
 		}
 		return var;
 	}

@@ -304,7 +304,7 @@ public class InferenceContext18 {
 		}
 		InferenceVariable[] newVariables = new InferenceVariable[len];
 		for (int i = 0; i < len; i++)
-			newVariables[i] = InferenceVariable.get(typeVariables[i], i, this.currentInvocation, this.scope, this.object, true);
+			newVariables[i] = InferenceVariable.get(typeVariables[i], i, this.currentInvocation, this.scope, this.object, true, typeVariables);
 		addInferenceVariables(newVariables);
 		return newVariables;
 	}
@@ -335,7 +335,7 @@ public class InferenceContext18 {
 				newVariables[i] = (InferenceVariable) typeArguments[i]; // prevent double substitution of an already-substituted inferenceVariable
 			else if (!capturesOnly || typeArguments[i] instanceof CaptureBinding)
 				toAdd[numToAdd++] =
-					newVariables[i] = InferenceVariable.get(typeArguments[i], i, this.currentInvocation, this.scope, this.object, false);
+					newVariables[i] = InferenceVariable.get(typeArguments[i], i, this.currentInvocation, this.scope, this.object, false, typeArguments);
 		}
 		if (numToAdd > 0) {
 			int start = 0;
