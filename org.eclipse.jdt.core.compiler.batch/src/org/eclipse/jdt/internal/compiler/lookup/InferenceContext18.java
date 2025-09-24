@@ -639,14 +639,14 @@ public class InferenceContext18 {
 				TypeBinding fsi = fs[Math.min(i, p-1)];
 				InferenceSubstitution inferenceSubstitution = new InferenceSubstitution(this.environment, this.inferenceVariables, site);
 				TypeBinding substF = inferenceSubstitution.substitute(inferenceSubstitution,fsi);
-				if (!addConstraintsToC_OneExpr(exprs[i], c, fsi, substF, method))
+				if (!addConstraintsToC_OneExpr(exprs[i], c, fsi, substF, method, true))
 					return false;
 	        }
 		}
 		return true;
 	}
 
-	private boolean addConstraintsToC_OneExpr(Expression expri, Set<ConstraintFormula> c, TypeBinding fsi, TypeBinding substF, MethodBinding method)
+	private boolean addConstraintsToC_OneExpr(Expression expri, Set<ConstraintFormula> c, TypeBinding fsi, TypeBinding substF, MethodBinding method, boolean addSelf)
 			throws InferenceFailureException
 	{
 		boolean substFIsProperType = substF.isProperType(true);
@@ -655,7 +655,7 @@ public class InferenceContext18 {
 		// --
 
 		// For all i (1 ≤ i ≤ k), if ei is not pertinent to applicability, the set contains ⟨ei → θ Fi⟩.
-		if (!expri.isPertinentToApplicability(fsi, method)) {
+		if (addSelf && !expri.isPertinentToApplicability(fsi, method)) {
 			c.add(new ConstraintExpressionFormula(expri, substF, ReductionResult.COMPATIBLE, ARGUMENT_CONSTRAINTS_ARE_SOFT));
 		}
 		if (expri instanceof FunctionalExpression) {
@@ -676,7 +676,7 @@ public class InferenceContext18 {
 						Expression[] resultExpressions = lambda.resultExpressions();
 						for (int i = 0, length = resultExpressions == null ? 0 : resultExpressions.length; i < length; i++) {
 							Expression resultExpression = resultExpressions[i];
-							if (!addConstraintsToC_OneExpr(resultExpression, c, r.original(), r, method))
+							if (!addConstraintsToC_OneExpr(resultExpression, c, r.original(), r, method, addSelf))
 								return false;
 						}
 					}
@@ -720,11 +720,11 @@ public class InferenceContext18 {
 			}
 		} else if (expri instanceof ConditionalExpression) {
 			ConditionalExpression ce = (ConditionalExpression) expri;
-			return addConstraintsToC_OneExpr(ce.valueIfTrue, c, fsi, substF, method)
-					&& addConstraintsToC_OneExpr(ce.valueIfFalse, c, fsi, substF, method);
+			return addConstraintsToC_OneExpr(ce.valueIfTrue, c, fsi, substF, method, addSelf)
+					&& addConstraintsToC_OneExpr(ce.valueIfFalse, c, fsi, substF, method, addSelf);
 		} else if (expri instanceof SwitchExpression se) {
 			for (Expression re : se.resultExpressions()) {
-				if (!addConstraintsToC_OneExpr(re, c, fsi, substF, method))
+				if (!addConstraintsToC_OneExpr(re, c, fsi, substF, method, addSelf))
 					return false;
 			}
 			return true;
