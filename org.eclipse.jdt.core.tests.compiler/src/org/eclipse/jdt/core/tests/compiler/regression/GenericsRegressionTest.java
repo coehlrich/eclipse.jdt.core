@@ -3372,6 +3372,27 @@ public void test425719a() {
 		"The type Y must implement the inherited abstract method Base.foo(List<T>)\n" +
 		"----------\n");
 }
+public void testGH4604() {
+  runConformTest(new String[] {
+          "Test.java",
+          """
+          import java.util.concurrent.CompletableFuture;
+          import java.util.stream.Stream;
+          public class Test {
+              public static void main(String[] args) {
+                  CompletableFuture.allOf(Stream.of(1)
+                      .map(value -> future(value))
+                      .toArray(CompletableFuture[]::new));
+              }
+
+              public static <T> CompletableFuture<?> future(T t) {
+                  return CompletableFuture.completedFuture(t);
+              }
+          }
+          """
+      },
+      "");
+}
 // https://bugs.eclipse.org/bugs/show_bug.cgi?id=425719, [1.8][compiler] Bogus ambiguous call error from compiler.
 public void test425719b() {
 	String interfaceMethod =

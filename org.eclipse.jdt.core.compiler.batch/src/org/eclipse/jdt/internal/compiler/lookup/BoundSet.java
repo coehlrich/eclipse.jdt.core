@@ -724,7 +724,7 @@ class BoundSet {
 				}
 			}
 		}
-		this.captures.clear();
+//		this.captures.clear();
 		return true;
 	}
 
